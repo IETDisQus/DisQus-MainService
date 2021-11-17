@@ -1,12 +1,18 @@
-qnamodule/src/main/java/resources/application.properties
+qnamodule/src/main/resources/application.properties
 qnamodule/.settings/
+qnamodule/.project
 qnamodule/.classpath
 qnamodule/target/
 
-invitesmodule/.settings/
+invitesmodule/.settings
+invitesmodule/.project
 invitesmodule/.classpath
 invitesmodule/target/
 
 searchmodule/.settings/
 searchmodule/.classpath
 searchmodule/target/
+searchmodule/.project
+
+.settings
+.project
