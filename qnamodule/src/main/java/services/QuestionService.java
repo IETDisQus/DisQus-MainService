@@ -4,18 +4,18 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import dto.Question;
+import models.QuestionEntity;
 
 @Service
 public interface QuestionService {
 	
-	public Boolean postQuestion(Question que);
+	public QuestionEntity postQuestion(QuestionEntity que);
 	
-	public List<Question> getAllQue();
+	public List<QuestionEntity> getAllQue();
 	
-	public List<Question> getQuesByUserId(String user_id);
+	public List<QuestionEntity> getQuesByUserId(String user_id);
 	
-	public List<Question> getAllAnsweredQue(String user_id);
+	public List<QuestionEntity> getAllAnsweredQue(String user_id);
 	
 	public Boolean deleteQue(String que_id);
 		

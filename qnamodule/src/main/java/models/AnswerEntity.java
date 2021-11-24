@@ -5,7 +5,6 @@ import java.util.Date;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -16,23 +15,19 @@ import javax.persistence.ManyToOne;
 public class AnswerEntity {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String ansId;
 	
-	@Column
 	private String ansText;
 
-	@Column
 	private Date timeStamp;
 	
-	@Column
 	private String user_id;
 	
-	@Column
 	private Long upvotes;
 	
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "queId", referencedColumnName = "que_id")
 	private QuestionEntity que;
 	

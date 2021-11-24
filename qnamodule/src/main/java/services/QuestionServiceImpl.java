@@ -1,6 +1,5 @@
 package services;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -8,136 +7,87 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import clients.UserClient;
 import dao.QuestionDao;
-import dto.Answer;
-import dto.Question;
-import models.AnswerEntity;
 import models.QuestionEntity;
 
 @Service
 public class QuestionServiceImpl implements QuestionService{
 	
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QuestionServiceImpl.class);
+
 	@Autowired
 	QuestionDao questionDao;
 	
-	@Autowired UserClient userClient;
-
 	@Override
 	@Transactional
-	public Boolean postQuestion(Question que) {
-		
-		QuestionEntity queEntity = new QuestionEntity();
-		
-		List<AnswerEntity> ansEntities = new ArrayList<AnswerEntity>();
-		
-		for(Answer answer : que.getAnswers()) {
-			ansEntities.add(convertToEntity(answer));
+	public QuestionEntity postQuestion(QuestionEntity que) {
+		try {
+			return questionDao.save(que);
 		}
-		
-		queEntity.setUser_id(que.getQueId());
-		queEntity.setIsAnswered(false);
-		queEntity.setAnswers(ansEntities);
-		queEntity.setQue_text(que.getQueText());
-		queEntity.setTags(que.getTags());
-		queEntity.setTimeStamp(que.getTimeStamp());
-		queEntity.setUser_id(que.getQuestioned_by());
+		catch(IllegalArgumentException e) {
+			log.error("QuestionEntity is null");
+			return null;
+		}
+	}
+
+	
+	@Override
+	public List<QuestionEntity> getAllQue() {
 		
 		try {
-			questionDao.save(queEntity);
-			return true;
+			List<QuestionEntity> questionEntities = questionDao.findAll();
+			return questionEntities;
 		}
 		catch(Exception e) {
-			return false;
+			log.error("Exception while fetching ques from DB {}",e);
+			return null;
 		}
-		
-	}
-
-	private AnswerEntity convertToEntity(Answer answer) {
-		AnswerEntity ansEntity = new AnswerEntity();
-		
-		ansEntity.setAnsId(answer.getAnsId());
-		ansEntity.setAnsText(answer.getAnsText());
-		ansEntity.setIsVerified(answer.getIsVerified());
-		ansEntity.setQue(questionDao.findById(answer.getQue()).get());
-		ansEntity.setTimeStamp(answer.getTimeStamp());
-		ansEntity.setUpvotes(answer.getUpvotes());
-		ansEntity.setUser_id(answer.getAnswered_by());
-		
-		return ansEntity;
 	}
 
 	@Override
-	public List<Question> getAllQue() {
-		
-		List<QuestionEntity> questionEntities = questionDao.findAll();
-		
-		List<Question> questionDTOs = new ArrayList<Question>();
-		
-		for(QuestionEntity que : questionEntities) {
-			questionDTOs.add(convertToDTO(que));
-		}
-		
-		return null;
-	}
-
-	@Override
-	public List<Question> getQuesByUserId(String user_id) {
-		
+	public List<QuestionEntity> getQuesByUserId(String user_id) {
+			try {
+				if(user_id != null && user_id == "") {
+					List<QuestionEntity> questions = questionDao.getAllQueByUserId(user_id);
+					return questions;
+				}else {
+					throw new IllegalArgumentException("user_id is null or empty");
+				}
+			}
+			catch(Exception e) {
+				log.error("Exception {} while fetching que from Db with user_id {}",e, user_id);
 				return null;
+			}	
 	}
 
 	@Override
-	public List<Question> getAllAnsweredQue(String user_id) {
-		return null;
+	public List<QuestionEntity> getAllAnsweredQue(String user_id) {
+		
+		try {
+			if(user_id != null && user_id != "") {
+				List<QuestionEntity> questions = questionDao.getAnsweredQueByUserId(user_id);
+				return questions;
+			}else {
+				throw new IllegalArgumentException("user_id is null or empty");
+			}
+		}
+		catch(Exception e) {
+			log.error("Exception {} while fetching answered que from Db with user_id {}", e,user_id);
+			return null;
+		}	
 	}
 
 	@Override
 	public Boolean deleteQue(String que_id) {
-		
 		try {
 			questionDao.deleteById(que_id);
 			return true;
 		}
 		catch(Exception e) {
+			log.error("Exception {} while deleting que",e);
 			return false;
 		}
 		
-	}
-
-	private Question convertToDTO(QuestionEntity que) {
-		
-		Question queDTO = new Question();
-		
-		List<Answer> answers = new ArrayList<Answer>();
-		
-		for(AnswerEntity ansEntity : que.getAnswers()) {
-			answers.add(convertAnswerEntityToDTO(ansEntity));
-		}
-		
-		queDTO.setIsAnswered(que.getIsAnswered());
-		queDTO.setQueId(que.getQue_id());
-		queDTO.setQueText(que.getQue_text());
-		queDTO.setTags(que.getTags());
-		queDTO.setTimeStamp(que.getTimeStamp());
-		queDTO.setQuestioned_by(que.getUser_id());
-		
-		return queDTO;
-	}
-
-	private Answer convertAnswerEntityToDTO(AnswerEntity ansEntity) {
-		
-		Answer ans = new Answer();
-		
-		ans.setAnsId(ansEntity.getAnsId());
-		ans.setAnsText(ansEntity.getAnsText());
-		ans.setAnswered_by(ansEntity.getUser_id());
-		ans.setIsVerified(ansEntity.getIsVerified());
-		ans.setQue(ansEntity.getQue().getQue_id());
-		ans.setTimeStamp(ansEntity.getTimeStamp());
-		ans.setUpvotes(ansEntity.getUpvotes());
-		
-		return ans;
 	}
 
 }

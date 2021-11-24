@@ -14,9 +14,9 @@ import models.AnswerEntity;
 @Transactional
 public interface AnswerDao extends JpaRepository<AnswerEntity,String> {
 	
-	@Query("Select ae from AnswerEntity ae where ae.que_id = ?1")
+	@Query("Select ae from AnswerEntity ae where ae.que.que_id = ?1")
 	public List<AnswerEntity> getAnswersByQueId(String que_id);
 
-	@Query("Select ae from AnswerEntity ae where ae.isVerified = true and ae.que_id=?1")
+	@Query("Select ae from AnswerEntity ae where ae.isVerified = true and ae.que.que_id=?1")
 	public List<AnswerEntity> getVerifiedAnswers(String que_id);
 }

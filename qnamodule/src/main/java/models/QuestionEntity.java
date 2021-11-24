@@ -1,43 +1,43 @@
 package models;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
+@Table
 public class QuestionEntity {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String que_id;
 	
-	@Column
 	private String que_text;
 	
-	@Column
+	
 	private String user_id;
 	
-	@Column
+	@ElementCollection
 	private List<String> tags;
 	
-	@Column
 	private Boolean isAnswered;
 	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "que", cascade = CascadeType.ALL)
-	private List<AnswerEntity> answers =  new ArrayList<>();
+	@JsonIgnore
+	@OneToMany(mappedBy = "que")
+	private List<AnswerEntity> answers ;
 	
-	@Column
 	private LocalDateTime timeStamp ;
+	
 	
 	public String getQue_id() {
 		return que_id;
@@ -78,7 +78,6 @@ public class QuestionEntity {
 	public void setIsAnswered(Boolean isAnswered) {
 		this.isAnswered = isAnswered;
 	}
-
 
 	public List<AnswerEntity> getAnswers() {
 		return answers;

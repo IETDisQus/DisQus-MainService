@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import dto.User;
-
 @Component
 public class UserClient {
 	
@@ -14,10 +12,5 @@ public class UserClient {
 	@Autowired
 	RestTemplate restTemplate;
 
-	public User getUserById(String user_id) {
-
-		
-		return null;
-	}
 
 }

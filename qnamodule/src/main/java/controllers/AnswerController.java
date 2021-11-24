@@ -3,7 +3,7 @@ package controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.RequestEntity.BodyBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import dto.Answer;
+import error.ErrorMessage;
+import models.AnswerEntity;
 import services.AnswerService;
 
 @RestController
@@ -22,49 +23,50 @@ import services.AnswerService;
 public class AnswerController {
 	
 	@Autowired
-	private AnswerService ansService;
+	private AnswerService answerService;
 
 	@PostMapping("/reply")
-	public BodyBuilder postAns(@RequestBody Answer ans) {
+	public ResponseEntity<?> postAns(@RequestBody AnswerEntity ans) {
+		AnswerEntity ansEntity = answerService.postAnswer(ans);
+		 if(ansEntity != null) {
+			 return new ResponseEntity<AnswerEntity>(ansEntity, HttpStatus.CREATED);
+		 }else {
+			 return new ResponseEntity<ErrorMessage>(new ErrorMessage("db error: ans is null"),HttpStatus.SERVICE_UNAVAILABLE);
+		 }
+	}
+	
+	@PostMapping("/verify/{ans_id}")
+	public ResponseEntity<?> verifyAns(@PathVariable String ans_id) {
 		
-		if(ansService.postAnswer(ans)) {
-			return (BodyBuilder) ResponseEntity.ok();
+		if(answerService.verifyAnswer(ans_id)) {
+			return  new ResponseEntity<String>("answer verified",HttpStatus.OK);
 		}
 		else {
-			return (BodyBuilder) ResponseEntity.status(0);
+			return new ResponseEntity<String>("db error: invalid ans_id",HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}
 	
-	@PostMapping("/verify/{ans_id")
-	public BodyBuilder verifyAns(@PathVariable String ans_id) {
+	@PostMapping("/upVote/{ans_id}")
+	public ResponseEntity<?> upvoteAns(@PathVariable String ans_id) {
 		
-		if(ansService.verifyAnswer(ans_id)) {
-			return (BodyBuilder) ResponseEntity.ok();
+		if(answerService.upVoteAnswer(ans_id)) {
+			return  new ResponseEntity<String>("answer upvoted",HttpStatus.OK);
 		}
 		else {
-			return (BodyBuilder) ResponseEntity.status(0);
+			return new ResponseEntity<String>("db error: invalid ans_id",HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}
 	
-	@PostMapping("/upVote/{ans_id")
-	public BodyBuilder upVoteAns(@PathVariable String ans_id) {
-		
-		if(ansService.upVoteAnswer(ans_id)) {
-			return (BodyBuilder) ResponseEntity.ok();
-		}
-		else {
-			return (BodyBuilder) ResponseEntity.status(0);
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
 	@GetMapping("/all/{que_id}")
-	public ResponseEntity<List<Answer>> getAllAnswerstoQue(@PathVariable String que_id){
-		
-		List<Answer> answers = ansService.getAllAnswersByQueId(que_id);
-		return (ResponseEntity<List<Answer>>) answers;
+	public ResponseEntity<?> getAllAnsToQue(@PathVariable String que_id){
+		List<AnswerEntity > answers = answerService.getAllAnswersByQueId(que_id);
+		if(answers != null) {
+			return new ResponseEntity<List<AnswerEntity>>(answers , HttpStatus.OK);
+		}else {
+			ErrorMessage errorMsg = new ErrorMessage("answers not found");
+			return new ResponseEntity<ErrorMessage>(errorMsg,HttpStatus.NOT_FOUND);
+		}	
 		
 	}
-	
 	
 }

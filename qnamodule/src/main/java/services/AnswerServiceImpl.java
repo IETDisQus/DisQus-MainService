@@ -1,6 +1,5 @@
 package services;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import dao.AnswerDao;
 import dao.QuestionDao;
-import dto.Answer;
 import models.AnswerEntity;
 
 @Service
@@ -21,59 +19,54 @@ public class AnswerServiceImpl implements AnswerService{
 	
 	@Autowired 
 	private QuestionDao queDao;
+	
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AnswerServiceImpl.class);
 
 	@Override
 	@Transactional
-	public Boolean postAnswer(Answer ans) {
-		AnswerEntity ansEntity = new AnswerEntity();
-		ansEntity.setAnsText(ans.getAnsText());
-		ansEntity.setIsVerified(false);
-		ansEntity.setQue(queDao.getById(ans.getQue()));
-		ansEntity.setTimeStamp(ans.getTimeStamp());
-		ansEntity.setUpvotes(ans.getUpvotes());
-		ansEntity.setUser_id(ans.getAnswered_by());
-		
+	public AnswerEntity postAnswer(AnswerEntity ans) {
 		try {
-			answerDao.save(ansEntity);
-			return true;
+			return answerDao.save(ans);
 		}
-		catch(Exception e) {
-			return false;
-		}
-			
+		catch(IllegalArgumentException e) {
+			log.error("AnswerEntity is null");
+			return null;
+		}		
 	}
 
 	@Override
-	public List<Answer> getAllAnswersByQueId(String que_id) {
-		
-		if(que_id != null && queDao.existsById(que_id)) {
-			List<Answer> answers = new ArrayList<Answer>();
-			try {
-				List<AnswerEntity> ansEntities = answerDao.getAnswersByQueId(que_id);
-				for(AnswerEntity ansEntity : ansEntities) {
-					answers.add(convertToDTO(ansEntity));
-				}
+	public List<AnswerEntity> getAllAnswersByQueId(String que_id) {
+	 try {
+		 if(que_id != null && queDao.existsById(que_id)) {
+				List<AnswerEntity> answers = answerDao.getAnswersByQueId(que_id);
 				return answers;
 			}
-			catch(Exception e) {
+			else{
+				log.error("que_id is null");
 				return null;
 			}
-			
-		}
-		else {
-			return null;
-		}
+	 }catch(Exception e) {
+		 log.error("Exception {} while fetching answers of que {}",e,que_id);
+		 return null;
+	 }
 		
 	}
 
 	@Override
-	public List<Answer> getAllVerifiedAnswer(String que_id) {
-		List<Answer> answers = new ArrayList<Answer>();
-		List<AnswerEntity> ansEntities = answerDao.getAnswersByQueId(que_id);
-		for(AnswerEntity ansEntity : ansEntities) {
-			answers.add(convertToDTO(ansEntity));
-		}
-		return answers;
+	public List<AnswerEntity> getAllVerifiedAnswer(String que_id){
+		 try {
+			 if(que_id != null && queDao.existsById(que_id)) {
+					List<AnswerEntity> answers = answerDao.getVerifiedAnswers(que_id);
+					return answers;
+				}
+				else{
+					log.error("que_id is null");
+					return null;
+				}
+		 }catch(Exception e) {
+			 log.error("Exception {} while fetching answers of que {}",e,que_id);
+			 return null;
+		 }		
 	}
 
 	@Override
@@ -116,18 +109,6 @@ public class AnswerServiceImpl implements AnswerService{
 			return false;
 		}
 		
-	}
-	
-	private Answer convertToDTO(AnswerEntity ansEntity) {
-		Answer ans = new Answer();	
-		ans.setAnsId(ansEntity.getAnsId());
-		ans.setAnsText(ansEntity.getAnsText());
-		ans.setAnswered_by(ansEntity.getUser_id());
-		ans.setIsVerified(ansEntity.getIsVerified());
-		ans.setQue(ansEntity.getQue().getQue_id());
-		ans.setTimeStamp(ansEntity.getTimeStamp());
-		ans.setUpvotes(ansEntity.getUpvotes());
-		return ans;
 	}
 	
 }
